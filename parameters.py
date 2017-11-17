@@ -1,41 +1,95 @@
 import tensorflow as tf
 from load_data import *
 
+# Flags
 final = False
+l2_regularize = True
 
-EPOCHS = 10
-BATCH_SIZE = 50
-dropout = 0.95
+# Tunable parameters
+x_bar = 0
+sigma = 0.1
+beta = 0.001
+EPOCHS = 15
+BATCH_SIZE = 20
+dropout = 0.99
+learning_rate = 0.001
+conv_stride = 1
+pool_stride = 2
+pool_dim = 2
+
+# Calculate data parameters
 n_classes = len(set(y_train))
-(width, height, n_colors) = X_train.shape[1:4]
+(width, height) = (int(X_train.shape[1]),int(X_train.shape[2]))
 
-# Store layers weight & bias
+P = 'VALID'
+
+if P == 'VALID':
+    p_val = 0
+else:
+    p_val = 1
+
+# Filter height and width are equal for each convolution
+filters = {
+    'hw_1' : 3,
+    'hw_2' : 2,
+    'hw_3' : 2,
+}
+
+# Fully connected layer sizes
+layer_size = {
+    'fc_1' : 200,
+    'fc_2' : 100
+}
+
+# Output depth for convolution layers
+depths_out = {
+    'c_1' : 40,
+    'c_2' : 100,
+    'c_3' : 300
+}
+
+# Output dimension after each pooling operation
+output_dims = {
+    'c_1' : int((height- filters['hw_1'] + 2 * p_val)/conv_stride + 1)
+}
+
+output_dims['p_1'] = int((output_dims['c_1'] - pool_dim + 2 * p_val)/pool_stride + 1)
+output_dims['c_2'] = int((output_dims['p_1'] - filters['hw_2'] + 2 * p_val)/conv_stride + 1)
+output_dims['p_2'] = int((output_dims['c_2'] - pool_dim + 2 * p_val)/pool_stride + 1)
+output_dims['c_3'] = int((output_dims['p_2'] - filters['hw_3'] + 2 * p_val)/conv_stride + 1)
+output_dims['p_3'] = int((output_dims['c_3'] - pool_dim + 2 * p_val)/pool_stride + 1)
+
+# Definitions for network weights
 weights = {
-    # 3 * 3 filter, 1 input, 6 output
-    'wc1': tf.Variable(tf.random_normal([3, 3, n_colors, 6], mean = 0, stddev = 0.1)),#CHANGED
-    # 5 * 5 filter, 6 input, 16 output
-    'wc2': tf.Variable(tf.random_normal([5, 5, 6, 16], mean = 0, stddev = 0.1)),
-    # 5*5*16 inputs, 120 outputs
-    'wf1': tf.Variable(tf.random_normal([5*5*16, 120], mean = 0, stddev = 0.1)),
-    # 120 inputs, 84 outputs
-    'wf2': tf.Variable(tf.random_normal([120, 84], mean = 0, stddev = 0.1)),
-    # 84 inputs, 10 outputs
-    'out': tf.Variable(tf.random_normal([84, n_classes], mean = 0, stddev = 0.1))}
+    # Convolution 1
+    'wc1': tf.Variable(tf.random_normal([filters['hw_1'], filters['hw_1'], n_colors, depths_out['c_1']], mean = x_bar, stddev = sigma)),
+    # Convolution 2
+    'wc2': tf.Variable(tf.random_normal([filters['hw_2'], filters['hw_2'], depths_out['c_1'], depths_out['c_2']], mean = x_bar, stddev = sigma)),
+    # Convolution 3
+    'wc3': tf.Variable(tf.random_normal([filters['hw_3'], filters['hw_3'], depths_out['c_2'], depths_out['c_3']], mean = x_bar, stddev = sigma)),
+    # Fully Connected 1
+    'wf1': tf.Variable(tf.random_normal([output_dims['p_3']*output_dims['p_3']*depths_out['c_3'], layer_size['fc_1']], mean = x_bar, stddev = sigma)),
+    # Fully Connected 2
+    'wf2': tf.Variable(tf.random_normal([layer_size['fc_1'], layer_size['fc_2']], mean = x_bar, stddev = sigma)),
+    # Output Layer
+    'out': tf.Variable(tf.random_normal([layer_size['fc_2'], n_classes], mean = x_bar, stddev = sigma))}
 
+# Definitions for network biases
 biases = {
-    # 6 outputs from layer
-    'bc1': tf.Variable(tf.zeros([6])),
-    # 16 outputs from layer
-    'bc2': tf.Variable(tf.zeros([16])),
-    # 120 outputs from FC1
-    'bf1': tf.Variable(tf.zeros([120])),
-    # 84 outputs from FC2
-    'bf2': tf.Variable(tf.zeros([84])),
-    # 10 outputs from FC3
+    # Convolution 1
+    'bc1': tf.Variable(tf.zeros([depths_out['c_1']])),
+    # Convolution 2
+    'bc2': tf.Variable(tf.zeros([depths_out['c_2']])),
+    # Convolution 3
+    'bc3': tf.Variable(tf.zeros([depths_out['c_3']])),
+    # Fully Connected 1
+    'bf1': tf.Variable(tf.zeros([layer_size['fc_1']])),
+    # Fully Connected 2
+    'bf2': tf.Variable(tf.zeros([layer_size['fc_2']])),
+    # Output Layer
     'out': tf.Variable(tf.zeros([n_classes]))}
 
-# MNIST consists of 28x28x1, grayscale images
-x = tf.placeholder(tf.float32, (None, width, height, n_colors))#CHANGED
-# Classify over 10 digits 0-9
-y = tf.placeholder(tf.int32, (None))#CHANGED
-one_hot_y = tf.one_hot(y, depth = n_classes)#CHANGED
+# Placeholder variables for feeding data into the network
+x = tf.placeholder(tf.float32, (None, width, height, n_colors))
+y = tf.placeholder(tf.int32, (None))
+one_hot_y = tf.one_hot(y, depth = n_classes)

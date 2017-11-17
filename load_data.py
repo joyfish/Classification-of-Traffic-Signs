@@ -1,6 +1,10 @@
 from helper_functions import norm
 import pickle
 
+greyscale = False
+
+n_colors = 1 if greyscale else 3
+
 training_file = 'traffic-signs-data/train.p'
 validation_file= 'traffic-signs-data/valid.p'
 testing_file = 'traffic-signs-data/test.p'
