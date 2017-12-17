@@ -13,32 +13,37 @@ def hist(labels, title):
 
 def plot_input_channels(X, i):
 
-	""" Function to plot one image from each input channel """
+    """ Function to plot one image from each input channel """
 
-	D ={0 : 'Red Channel',
-		1 : 'Green Channel',
-		2 : 'Blue Channel',
-		3 : 'Grey Channel',
-		4 : 'Red Flipped',
-		5 : 'Green Flipped',
-		6 : 'Blue Flipped',
-		7 : 'Edge Detection'}
+    D ={0 : 'Red Channel',
+        1 : 'Green Channel',
+        2 : 'Blue Channel',
+        3 : 'Grey Channel',
+        4 : 'Red Flipped',
+        5 : 'Green Flipped',
+        6 : 'Blue Flipped',
+        7 : 'Edge Detection',
+        8 : '45 Deg Right',
+        9 : '45 Deg Left'}
 
-	C ={0 : 'Reds',
-		1 : 'Greens',
-		2 : 'Blues',
-		3 : 'Greys',
-		4 : 'Reds',
-		5 : 'Greens',
-		6 : 'Blues',
-		7 : 'Greys_r'}
-
-	for idx in range(0,8):
-		f = 241 + idx
-		plt.subplot(f)
-		plt.imshow(X[i, :, :, idx], cmap = C[idx])
-		plt.title(D[idx])
-	plt.show()
+    C ={0 : 'Reds',
+        1 : 'Greens',
+        2 : 'Blues',
+        3 : 'Greys',
+        4 : 'Reds',
+        5 : 'Greens',
+        6 : 'Blues',
+        7 : 'Greys_r',
+        8 : 'Greys_r',
+        9 : 'Greys_r'}
+    fig = plt.figure()
+    for idx in range(0,10):
+        plt.subplot(2, 5, idx + 1)
+        plt.imshow(X[i, :, :, idx], cmap = C[idx])
+        plt.title(D[idx], size = 'small')
+    plt.tight_layout()
+    plt.show()
+    #savefig('input_channels.png')
 
 
 def plot_validation(val_correct, y, string = 'Validation'):

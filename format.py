@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import PIL
 import os
+import csv
 
 folder = '.\\German Road Signs\\'
 folder_32 = '.\\German Road Signs\\32x\\'
@@ -12,6 +13,13 @@ y_int = np.empty((5), dtype=np.float32)
 
 print('\nProcessing test images from internet:')
 print('=====================================\n')
+
+signnames = []
+with open('signnames.csv', 'r') as csvfile:
+	spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+	for row in spamreader:
+		signnames.append(row)
+
 
 for i in range(0, 5):
 	loc = folder + str(i + 1) + '.jpg'
@@ -29,8 +37,12 @@ for i in range(0, 5):
 	im = cv2.imread(folder_32 + str(i + 1) + '32' + '.jpg', 1)
 	X_int[i, :, :, :] = im
 
-y_int[0] = 13 # yield sign
-y_int[1] = 23 # slippery road
-y_int[2] = 40 # roundabout
-y_int[3] = 14 # stop
-y_int[4] = 15 # no vehicle
+for im in X_int:
+	plt.imshow(im)
+	plt.show()
+
+y_int[0] = 12 # priority road
+y_int[1] = 34 # turn left ahead
+y_int[2] = 32 # end speed limits
+y_int[3] = 13 # yield
+y_int[4] = 11 # right of way
