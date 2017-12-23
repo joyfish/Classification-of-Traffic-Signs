@@ -82,9 +82,6 @@ def setup_parameter_summary(kw, kb):
     tf.summary.scalar('H_{}_m'.format(kw),tf.reduce_mean(weights[kw]))
     tf.summary.scalar('H_{}_m'.format(kb),tf.reduce_mean(biases[kb]))
 
-
-
-
 with tf.name_scope("parameters"):
 
     with tf.name_scope("weights"):

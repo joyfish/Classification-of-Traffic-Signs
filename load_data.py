@@ -73,11 +73,11 @@ titles = {
 }
 
 # Plot distribution of labels in test, validation, training data
-for i in range(0, 3):
-	plt.subplot(3, 1, i + 1)
-	plt.grid()
-	hist(labels[i], titles[i])
-plt.show()
+#for i in range(0, 3):
+#	plt.subplot(3, 1, i + 1)
+#	plt.grid()
+#	hist(labels[i], titles[i])
+#plt.show()
 #savefig('histogram_input_data.png')
 
 # Plot of the 8 different channels for a sample image

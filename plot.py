@@ -7,9 +7,12 @@ def hist(labels, title):
 	""" Function to plot a histogram of the number of occurrances
 	of each label in the training dataset """
 
-	plt.hist(labels, bins=43)
+	plt.hist(labels, bins=np.arange(44)-0.5)
 	plt.ylabel('Number of Occurrances')
 	plt.title(title)
+
+	locs, labels = plt.xticks()
+	plt.xticks(range(0,43), range(0,43))
 
 def plot_input_channels(X, i):
 
@@ -17,28 +20,28 @@ def plot_input_channels(X, i):
 
     D ={0 : 'Red Channel',
         1 : 'Green Channel',
-        2 : 'Blue Channel',
-        3 : 'Grey Channel',
-        4 : 'Red Flipped',
-        5 : 'Green Flipped',
-        6 : 'Blue Flipped',
-        7 : 'Edge Detection',
-        8 : '45 Deg Right',
-        9 : '45 Deg Left'}
+        2 : 'Blue Channel'}
+        #3 : 'Grey Channel',
+        #4 : 'Red Flipped',
+        #5 : 'Green Flipped',
+        #6 : 'Blue Flipped',
+        #7 : 'Edge Detection',
+        #8 : '45 Deg Right',
+        #9 : '45 Deg Left'}
 
     C ={0 : 'Reds',
         1 : 'Greens',
-        2 : 'Blues',
-        3 : 'Greys',
-        4 : 'Reds',
-        5 : 'Greens',
-        6 : 'Blues',
-        7 : 'Greys_r',
-        8 : 'Greys_r',
-        9 : 'Greys_r'}
+        2 : 'Blues'}
+        #3 : 'Greys',
+        #4 : 'Reds',
+        #5 : 'Greens',
+        #6 : 'Blues',
+        #7 : 'Greys_r',
+        #8 : 'Greys_r',
+        #9 : 'Greys_r'}
     fig = plt.figure()
-    for idx in range(0,10):
-        plt.subplot(2, 5, idx + 1)
+    for idx in range(0, 3):
+        plt.subplot(1, 3, idx + 1)
         plt.imshow(X[i, :, :, idx], cmap = C[idx])
         plt.title(D[idx], size = 'small')
     plt.tight_layout()

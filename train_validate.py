@@ -5,6 +5,7 @@ from lenet import LeNet
 from sklearn.utils import shuffle
 from datetime import datetime
 import os
+import copy
 
 
 
@@ -35,7 +36,9 @@ with tf.name_scope("batch_training"):
     with tf.name_scope("forward_propogation"):
         forward_prop, c1, c2, c3, f1, f2 = LeNet(x, keep_prob)
     with tf.name_scope("calc_cost"):
-        loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = forward_prop, labels = one_hot_y))#CHANGED
+        ce = tf.nn.softmax_cross_entropy_with_logits(logits = forward_prop, labels = one_hot_y)
+        soft = tf.nn.softmax(logits = forward_prop)
+        loss_op = tf.reduce_mean(ce)#CHANGED
     
     with tf.name_scope("optimizer"):
         opt = tf.train.AdamOptimizer(learning_rate = learning_rate)
@@ -102,31 +105,56 @@ def eval_data(dataset, labels, plot_layers = False, pre = False, int_im = False)
                 batch_start = 0
                 num = 1
                 batch_x, batch_y = dataset, labels
-                loss, acc, correct, pred, lab, fw = sess.run([loss_op, accuracy_op, correct_prediction, prediction, label, forward_prop], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.0})
+                loss, acc, correct, pred, lab, s = sess.run([loss_op, accuracy_op, correct_prediction, prediction, label, soft], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.0})
                 total_acc, total_loss = acc, loss
 
-                print('Forward: {}'.format(fw))
-                print('prediction: {}'.format(pred))
-                print('label: {}'.format(lab))
+                #print('Forward: {}'.format(fw))
+                #print('prediction: {}'.format(pred))
+                #print('label: {}'.format(lab))
+
+                ## Plot the softmax outputs for the 5 example images ##
 
                 colors = {1: 'r', 2: 'g', 3: 'b', 4: 'c', 5: 'm'}
                 labs = {}
                 flat_names = [item for sublist in signnames for item in sublist]
 
                 fig, ax = plt.subplots()
-                for i, prop in enumerate(fw):
+                for i, prop in enumerate(s):
                     # Iterate through the network outputs for each image
-                    labs[i + 1]= ax.plot(range(0,43), abs(fw[i]), colors[i + 1])
+                    labs[i + 1]= ax.plot(range(0,43), s[i], colors[i + 1])
                     plt.ylabel('Network Output')
                     plt.xlabel('Label Number')
                     plt.grid()
                 locs, labels = plt.xticks()
                 plt.xticks(range(0,43), flat_names, rotation='vertical')
-                ax.legend(['Priority Road (12)', 'Roundabout (40)', 'End of all speed (32)', 'Yield (13)', 'Right of way @ Intersection (11)'])
+                ledge = ['Priority Road (12)', 'Turn Left Ahead (34)', 'End of all speed (32)', 'Yield (13)', 'Right of way @ Intersection (11)']
+                ax.legend(ledge)
                 mng = plt.get_current_fig_manager()
                 mng.full_screen_toggle()
                 plt.tight_layout()
                 plt.subplots_adjust(bottom=0.5)
+                
+
+                ## For each of the 5 example images, print the top 5 predictions ##
+                x_max = 0
+                prob_max = 0
+
+                # Iterate through the images
+                for i, prop in enumerate(s):
+                    # Iterate through the predictions
+                    tmp = list(copy.deepcopy(prop))
+                    tmp_2 = copy.deepcopy(flat_names)
+                    print('\nPredicting: {}'.format(ledge[i]))
+                    # Find the 5 highest predictions
+                    for g in range(5):
+                        for c, prob in enumerate(tmp):
+                            if prob > prob_max:
+                                x_max = c
+                                prob_max = prob
+                        print('{}. {}: {:.3f}'.format(g + 1, tmp_2[x_max],prob_max))
+                        tmp.pop(x_max)
+                        tmp_2.pop(x_max)
+                        x_max, prob_max = 0, 0
                 plt.show()
 
             else:

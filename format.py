@@ -37,9 +37,9 @@ for i in range(0, 5):
 	im = cv2.imread(folder_32 + str(i + 1) + '32' + '.jpg', 1)
 	X_int[i, :, :, :] = im
 
-for im in X_int:
-	plt.imshow(im)
-	plt.show()
+#for im in X_int:
+#	plt.imshow(im)
+#	plt.show()
 
 y_int[0] = 12 # priority road
 y_int[1] = 34 # turn left ahead
